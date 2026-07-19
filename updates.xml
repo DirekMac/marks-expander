@@ -3,6 +3,6 @@
   <app appid='eghfjgaclicobcmafloalcecljecdnpi'>
     <updatecheck
       codebase='https://DireKMac.github.io/marks-expander/marks-expander.crx'
-      version='1.0.0' />
+      version='1.0.2' />
   </app>
 </gupdate>
