@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Mark TextPander</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:420px;min-height:200px;max-height:640px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;background:#0d0d12;color:#e0e0ee;display:flex;flex-direction:column;overflow:hidden}
+.hidden{display:none!important}
+
+/* LOGIN */
+#screen-login{padding:24px;display:flex;flex-direction:column;gap:14px}
+.login-logo{text-align:center;margin-bottom:4px}
+.login-logo img{width:180px;height:auto}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#666}
+input[type=text],input[type=password],input[type=number],textarea{background:#16161f;border:1px solid #252535;border-radius:7px;color:#e0e0ee;font-size:13px;font-family:inherit;padding:8px 10px;width:100%;outline:none;transition:border-color .15s}
+input:focus,textarea:focus{border-color:#7c6fff}
+input::placeholder,textarea::placeholder{color:#333}
+textarea{resize:none;line-height:1.5}
+.btn{cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border:none;border-radius:7px;padding:9px 14px;transition:all .15s;width:100%}
+.btn-primary{background:#7c6fff;color:#fff}
+.btn-primary:hover{background:#8d80ff}
+.btn-sm{font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;border:none}
+.err{font-size:11px;color:#f87171;min-height:14px}
+.login-hint{font-size:11px;color:#444;text-align:center}
+
+/* LOGO HEADER (user/owner screens) */
+.logo-header{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 12px 6px;background:#0d0d12;border-bottom:1px solid #1a1a26;flex-shrink:0}
+.logo-header img{width:160px;height:auto}
+
+/* TABS BAR */
+.tabs-bar{display:flex;align-items:center;justify-content:center;padding:4px 8px;background:#0d0d12;border-bottom:1px solid #1a1a26;flex-shrink:0;gap:2px}
+.tab-btn{background:none;border:none;color:#555;font-size:11px;font-weight:600;padding:5px 10px;border-radius:5px;cursor:pointer}
+.tab-btn.active{color:#9d94ff;background:rgba(124,111,255,.12)}
+.tab-btn:hover{color:#aaa}
+
+/* TOPBAR (right side controls) */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid #1a1a26;flex-shrink:0;background:#0d0d12}
+.topbar-left{display:flex;align-items:center;gap:7px}
+.role-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 7px;border-radius:20px}
+.role-owner{background:rgba(124,111,255,.15);color:#9d94ff;border:1px solid rgba(124,111,255,.3)}
+.role-user{background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25)}
+.topbar-name{font-size:11px;font-weight:600;color:#ccc}
+.topbar-right{display:flex;align-items:center;gap:3px}
+.icon-btn{background:none;border:none;color:#555;font-size:13px;padding:3px 5px;border-radius:5px;cursor:pointer}
+.icon-btn:hover{background:#1e1e2e;color:#ccc}
+.sub-badge{font-size:10px;font-weight:700;border-radius:20px;padding:2px 7px}
+.sub-active{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+.sub-expiring{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.sub-expired{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2)}
+.notif-dot{display:none;width:7px;height:7px;background:#f87171;border-radius:50%;position:absolute;top:1px;right:1px}
+.notif-wrap{position:relative;display:inline-flex}
+
+/* WELCOME SECTION */
+.welcome-section{text-align:center;padding:10px 12px 8px;flex-shrink:0;background:linear-gradient(180deg,rgba(124,111,255,.08) 0%,transparent 100%);border-bottom:1px solid rgba(124,111,255,.12)}
+.welcome-hello{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.2px}
+.welcome-sub{font-size:11px;color:#7c6fff;margin-top:2px;font-weight:600}
+
+/* BROADCAST BANNER */
+.broadcast-banner{background:transparent;border:2px solid #dc2626;border-radius:6px;margin:0 12px 6px;padding:6px 10px;flex-shrink:0;align-items:center;gap:8px;display:none;box-sizing:border-box}
+.broadcast-icon{font-size:13px;flex-shrink:0}
+.broadcast-msg{font-size:11px;font-weight:600;color:#fbbf24;line-height:1.4;flex:1;word-break:break-word}
+.broadcast-close{background:none;border:none;color:#666;font-size:12px;cursor:pointer;padding:0 2px;flex-shrink:0;line-height:1}
+.broadcast-close:hover{color:#fbbf24}
+
+/* TAB CONTENT */
+.tab-content{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.sbar{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid #1a1a26;flex-shrink:0;gap:6px}
+.sbar-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#555;white-space:nowrap}
+.sbar-right{display:flex;align-items:center;gap:5px}
+.search-inp{width:95px!important;font-size:11px;padding:4px 7px}
+.btn-xs{background:#1a1a26;color:#888;border:1px solid #252535;font-size:10px;padding:4px 7px;border-radius:5px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn-xs:hover{color:#ccc}
+.btn-upload{display:inline-flex;align-items:center;cursor:pointer}
+.btn-upload input{display:none}
+
+/* SUGGEST BUTTON */
+.suggest-bar{padding:7px 12px;border-bottom:1px solid #1a1a26;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.suggest-bar span{font-size:11px;color:#444}
+.btn-suggest{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-suggest:hover{background:rgba(52,211,153,.2)}
+
+/* ADD ROW */
+.add-row{display:flex;gap:5px;padding:7px 12px 3px;flex-shrink:0}
+.add-row input{flex:1}
+.kw-inp{max-width:105px;flex:0 0 105px}
+
+/* SNIPPET LIST */
+.snip-list{flex:1;overflow-y:auto;padding:5px 9px 9px}
+.snip-list::-webkit-scrollbar{width:3px}
+.snip-list::-webkit-scrollbar-thumb{background:#252535;border-radius:3px}
+.snip-card{background:#111118;border:1px solid #1e1e2e;border-radius:8px;padding:8px 10px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.snip-card:hover{border-color:#2a2a3a}
+.snip-body{flex:1;min-width:0}
+.snip-kw{font-family:'SF Mono','Fira Code',monospace;font-size:11px;font-weight:700;color:#9d94ff;background:rgba(124,111,255,.1);border-radius:4px;padding:1px 5px;display:inline-block;margin-bottom:2px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.snip-preview{font-size:11px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.snip-btns{display:flex;gap:3px}
+.card-btn{background:none;border:1px solid transparent;border-radius:5px;padding:3px 5px;font-size:11px;color:#444;cursor:pointer}
+.card-btn:hover{background:#1e1e2e;color:#ccc;border-color:#2a2a38}
+.card-btn.del:hover{background:rgba(248,113,113,.08);color:#f87171;border-color:rgba(248,113,113,.2)}
+.empty{text-align:center;color:#333;padding:20px;font-size:12px;line-height:1.7}
+
+/* USERS TAB */
+.user-form{padding:9px 12px;border-bottom:1px solid #1a1a26;flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.form-row{display:flex;gap:6px}
+.form-row input{flex:1}
+.days-inp{max-width:85px;flex:0 0 85px}
+.pw-row{display:flex;gap:5px;align-items:center}
+.pw-row input{flex:1;font-family:'SF Mono','Fira Code',monospace;font-size:11px;color:#c4bfff;background:#0f0f18}
+.btn-gen{background:#1e1e30;color:#9d94ff;border:1px solid #3a3a55;border-radius:6px;padding:5px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-gen:hover{background:#2a2a44}
+.btn-copy{background:#1a1a28;color:#666;border:1px solid #252538;border-radius:6px;padding:5px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-copy:hover{color:#aaa}
+.btn-copy.copied{color:#34d399;border-color:rgba(52,211,153,.3)}
+.str-bar{height:3px;background:#1a1a26;border-radius:2px;overflow:hidden}
+.str-fill{height:100%;width:0;border-radius:2px;transition:width .3s,background .3s}
+.user-list{flex:1;overflow-y:auto;padding:5px 9px 9px}
+.user-list::-webkit-scrollbar{width:3px}
+.user-list::-webkit-scrollbar-thumb{background:#252535;border-radius:3px}
+.user-card{background:#111118;border:1px solid #1e1e2e;border-radius:8px;padding:8px 10px;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:11px;font-weight:700;color:#ccc;margin-bottom:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.user-meta{font-size:10px;color:#444}
+.user-actions{display:flex;gap:4px}
+.pill{font-size:9px;font-weight:700;border-radius:20px;padding:1px 6px}
+.pill-active{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+.pill-expiring{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.pill-expired{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2)}
+.pill-none{background:#1a1a26;color:#555;border:1px solid #252535}
+mark{background:rgba(124,111,255,.2);color:#c4bfff;border-radius:2px;padding:0 1px}
+
+/* LOGS TAB */
+.log-card{background:#111118;border:1px solid #1e1e2e;border-radius:8px;padding:9px 11px;margin-bottom:5px}
+.log-user{font-size:11px;font-weight:700;color:#9d94ff;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.log-entry{display:flex;align-items:flex-start;gap:6px;margin-bottom:3px;padding:4px 0;border-bottom:1px solid #1a1a1a}
+.log-entry:last-child{border-bottom:none;margin-bottom:0}
+.log-num{font-size:9px;font-weight:700;color:#333;flex-shrink:0;margin-top:2px;width:14px}
+.log-kw{font-family:'SF Mono','Fira Code',monospace;font-size:10px;color:#c4bfff;background:rgba(124,111,255,.1);border-radius:3px;padding:1px 4px;flex-shrink:0;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-arrow{color:#444;font-size:10px;flex-shrink:0}
+.log-exp{font-size:10px;color:#666;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-time{font-size:9px;color:#333;flex-shrink:0;margin-left:4px}
+
+/* NOTIFICATIONS TAB */
+.notif-list{flex:1;overflow-y:auto;padding:6px 9px}
+.notif-list::-webkit-scrollbar{width:3px}
+.notif-list::-webkit-scrollbar-thumb{background:#252535;border-radius:3px}
+.notif-card{background:#111118;border:1px solid #1e1e2e;border-radius:8px;padding:9px 11px;margin-bottom:5px}
+.notif-card.unread{border-color:rgba(124,111,255,.3);background:rgba(124,111,255,.04)}
+.notif-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.notif-user{font-size:11px;font-weight:700;color:#9d94ff}
+.notif-time{font-size:10px;color:#333}
+.notif-text{font-size:12px;color:#aaa;line-height:1.5}
+.notif-actions{display:flex;gap:5px;margin-top:6px}
+
+/* BROADCAST SEND */
+.broadcast-send{padding:9px 12px;border-bottom:1px solid #1a1a26;flex-shrink:0}
+.broadcast-send-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#555;margin-bottom:6px}
+.broadcast-row{display:flex;gap:6px}
+.broadcast-row textarea{flex:1;font-size:12px;padding:7px 9px;min-height:54px}
+
+/* SETTINGS */
+.settings-body{padding:12px;overflow-y:auto;flex:1}
+.settings-block{margin-bottom:14px}
+.settings-title{font-size:11px;font-weight:700;color:#ccc;margin-bottom:8px}
+.s-field{margin-bottom:9px}
+
+/* EXPIRED WALL */
+.expired-wall{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px}
+.expired-icon{font-size:32px}
+.expired-title{font-size:15px;font-weight:700;color:#f87171}
+.expired-msg{font-size:12px;color:#555;text-align:center;line-height:1.6}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(3px)}
+.modal{background:#14141e;border:1px solid #252535;border-radius:12px;padding:18px;width:330px;display:flex;flex-direction:column;gap:10px}
+.modal-title{font-size:13px;font-weight:700;color:#fff}
+.modal-actions{display:flex;gap:7px}
+.modal-actions button{flex:1;padding:8px}
+.btn-secondary{background:#1e1e2e;color:#888;border:1px solid #2a2a3a;border-radius:7px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px}
+.btn-danger{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);border-radius:7px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px}
+.sub-info{background:#0f0f18;border:1px solid #1e1e2e;border-radius:6px;padding:10px;font-size:11px;color:#888;line-height:1.7}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="screen-login" style="display:none">
+  <div class="login-logo">
+    <img src="https://DireKMac.github.io/marks-expander/logo.png" alt="Mark TextPander"/>
+  </div>
+  <div class="field"><label>Username</label><input id="l-user" type="text" placeholder="Enter username" autocomplete="off"/></div>
+  <div class="field"><label>Password</label><input id="l-pass" type="password" placeholder="Enter password"/></div>
+  <div class="err" id="l-err"></div>
+  <button class="btn btn-primary" id="btn-login">Sign In</button>
+  <div class="login-hint">No account? Contact Mark.</div>
+</div>
+
+<!-- ══ OWNER ══ -->
+<div id="screen-owner" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+  <!-- Logo -->
+  <div class="logo-header">
+    <img src="https://DireKMac.github.io/marks-expander/logo.png" alt="Mark TextPander"/>
+  </div>
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="ot-snippets">Snippets</button>
+    <button class="tab-btn" data-tab="ot-users">Users</button>
+    <button class="tab-btn" data-tab="ot-notifs">
+      <span class="notif-wrap">Notifications<span class="notif-dot" id="owner-notif-dot"></span></span>
+    </button>
+    <button class="tab-btn" data-tab="ot-logs">Logs</button>
+    <button class="tab-btn" data-tab="ot-settings">Settings</button>
+  </div>
+  <!-- Controls bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="role-badge role-owner">Owner</span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="btn-owner-logout" title="Sign out">⏏</button>
+    </div>
+  </div>
+
+  <!-- Owner: Snippets -->
+  <div id="ot-snippets" class="tab-content">
+    <div class="sbar">
+      <span class="sbar-title">Snippet Library</span>
+      <div class="sbar-right">
+        <input id="o-search" type="text" placeholder="Search…" class="search-inp"/>
+        <button class="btn-xs" id="btn-o-export">↓ CSV</button>
+        <label class="btn-xs btn-upload">↑ CSV<input id="o-csv" type="file" accept=".csv"/></label>
+      </div>
+    </div>
+    <div class="add-row">
+      <input id="o-kw" type="text" placeholder="Keyword" class="kw-inp" autocomplete="off" spellcheck="false"/>
+      <input id="o-exp" type="text" placeholder="Expanded text"/>
+      <button class="btn-sm btn-primary" id="btn-o-add">Add</button>
+    </div>
+    <div class="err" style="padding:0 12px" id="o-add-err"></div>
+    <div id="o-snip-list" class="snip-list"></div>
+  </div>
+
+  <!-- Owner: Users -->
+  <div id="ot-users" class="tab-content hidden">
+    <div class="sbar">
+      <span class="sbar-title">Users</span>
+      <input id="u-search" type="text" placeholder="Search users…" class="search-inp"/>
+    </div>
+    <div class="user-form">
+      <div class="form-row">
+        <input id="u-name" type="text" placeholder="Username" autocomplete="off"/>
+        <input id="u-days" type="number" placeholder="Days" class="days-inp" min="1"/>
+      </div>
+      <div class="pw-row">
+        <input id="u-pw" type="text" readonly spellcheck="false"/>
+        <button class="btn-gen" id="btn-u-gen">⟳</button>
+        <button class="btn-copy" id="btn-u-copy">⎘ Copy</button>
+      </div>
+      <div class="str-bar"><div class="str-fill" id="str-fill"></div></div>
+      <button class="btn btn-primary" id="btn-u-create">＋ Create User</button>
+      <div class="err" id="u-err"></div>
+    </div>
+    <div id="u-list" class="user-list"></div>
+  </div>
+
+  <!-- Owner: Notifications -->
+  <div id="ot-notifs" class="tab-content hidden" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <!-- Broadcast send -->
+    <div class="broadcast-send">
+      <div class="broadcast-send-title">📢 Send Broadcast Message to All Users</div>
+      <div class="broadcast-row">
+        <textarea id="broadcast-msg" placeholder="Type a message to send to all users…" rows="2"></textarea>
+        <button class="btn-sm btn-primary" id="btn-broadcast-send" style="flex-shrink:0;height:54px">Send</button>
+      </div>
+      <div class="err" id="broadcast-err" style="margin-top:4px"></div>
+      <div style="margin-top:6px">
+        <button class="btn-xs" id="btn-broadcast-clear" style="color:#f87171;border-color:rgba(248,113,113,.2)">✕ Clear broadcast (hide from users)</button>
+      </div>
+    </div>
+    <!-- Suggestions list -->
+    <div class="sbar">
+      <span class="sbar-title">User Suggestions</span>
+      <div class="sbar-right">
+        <button class="btn-xs" id="btn-mark-all-read">Mark all read</button>
+        <button class="btn-xs" id="btn-refresh-notifs">↺</button>
+      </div>
+    </div>
+    <div id="notif-list" class="notif-list"></div>
+  </div>
+
+  <!-- Owner: Logs -->
+  <div id="ot-logs" class="tab-content hidden" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="sbar">
+      <span class="sbar-title">User Activity Logs</span>
+      <div class="sbar-right">
+        <span style="font-size:10px;color:#444">Last 3 expansions per user</span>
+        <button class="btn-xs" id="btn-refresh-logs">↺</button>
+      </div>
+    </div>
+    <div id="logs-list" class="snip-list"></div>
+  </div>
+
+  <!-- Owner: Settings -->
+  <div id="ot-settings" class="tab-content hidden">
+    <div class="settings-body">
+      <div class="settings-block">
+        <div class="settings-title">Change Owner Password</div>
+        <div class="s-field"><input id="s-cur" type="password" placeholder="Current password"/></div>
+        <div class="s-field"><input id="s-new" type="password" placeholder="New password"/></div>
+        <div class="s-field"><input id="s-con" type="password" placeholder="Confirm new password"/></div>
+        <div class="err" id="s-err"></div>
+        <div style="font-size:11px;color:#34d399;min-height:14px" id="s-ok"></div>
+        <button class="btn btn-primary" id="btn-s-save">Update Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ USER ══ -->
+<div id="screen-user" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+  <!-- Logo -->
+  <div class="logo-header">
+    <img src="https://DireKMac.github.io/marks-expander/logo.png" alt="Mark TextPander"/>
+  </div>
+  <!-- Broadcast banner - below logo, above welcome -->
+  <div id="broadcast-banner" class="broadcast-banner">
+    <span class="broadcast-icon">📢</span>
+    <span class="broadcast-msg" id="broadcast-text"></span>
+    <button class="broadcast-close" id="btn-dismiss-broadcast">✕</button>
+  </div>
+
+  <!-- Welcome -->
+  <div class="welcome-section">
+    <div class="welcome-hello" id="u-welcome-hello">Hello!</div>
+    <div class="welcome-sub">Welcome to Mark TextPander</div>
+  </div>
+  <!-- Controls -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="role-badge role-user">User</span>
+      <span id="u-sub-badge" class="sub-badge"></span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="btn-user-refresh" title="Refresh snippets">↺</button>
+      <button class="icon-btn" id="btn-user-logout" title="Sign out">⏏</button>
+    </div>
+  </div>
+
+  <!-- Expired wall -->
+  <div id="u-expired-wall" class="expired-wall hidden">
+    <div class="expired-icon">🔒</div>
+    <div class="expired-title">Subscription Expired</div>
+    <div class="expired-msg">Your access has ended.<br>Contact Mark to renew.</div>
+  </div>
+
+  <!-- Active content -->
+  <div id="u-active-content" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="sbar">
+      <span class="sbar-title">My Snippets</span>
+      <div class="sbar-right">
+        <input id="us-search" type="text" placeholder="Search…" class="search-inp"/>
+        <button class="btn-xs" id="btn-us-export">↓ CSV</button>
+        <label class="btn-xs btn-upload">↑ CSV<input id="us-csv" type="file" accept=".csv"/></label>
+      </div>
+    </div>
+
+    <!-- Suggest button bar -->
+    <div class="suggest-bar">
+      <span>Have a suggestion or feedback?</span>
+      <button class="btn-suggest" id="btn-open-suggest">💡 Suggest</button>
+    </div>
+    <div class="add-row">
+      <input id="us-kw" type="text" placeholder="Keyword" class="kw-inp" autocomplete="off" spellcheck="false"/>
+      <input id="us-exp" type="text" placeholder="Expanded text"/>
+      <button class="btn-sm btn-primary" id="btn-us-add">Add</button>
+    </div>
+    <div class="err" style="padding:0 12px" id="us-add-err"></div>
+    <div id="us-snip-list" class="snip-list"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="modal-edit" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title">Edit Snippet</div>
+    <div class="field"><label>Keyword</label><input id="e-kw" type="text" autocomplete="off" spellcheck="false"/></div>
+    <div class="field"><label>Expanded text</label><textarea id="e-exp" rows="3"></textarea></div>
+    <div class="err" id="e-err"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-e-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-e-save" style="width:auto;flex:1;padding:8px">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUB MODAL -->
+<div id="modal-sub" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title">Manage Subscription</div>
+    <div class="sub-info" id="sub-info"></div>
+    <div class="field"><label>Add Days</label><input id="sub-days" type="number" placeholder="e.g. 30" min="1"/></div>
+    <div class="field"><label>Or exact date</label><input id="sub-date" type="date"/></div>
+    <div class="err" id="sub-err"></div>
+    <div class="modal-actions">
+      <button class="btn-danger" id="btn-sub-revoke">Revoke</button>
+      <button class="btn-secondary" id="btn-sub-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-sub-save" style="width:auto;flex:1;padding:8px">Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUGGESTION MODAL -->
+<div id="modal-suggest" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-title">💡 Send a Suggestion</div>
+    <div style="font-size:12px;color:#666;margin-bottom:4px">Your suggestion will be sent directly to Mark.</div>
+    <div class="field">
+      <textarea id="suggest-text" rows="4" placeholder="Type your suggestion or feedback here…"></textarea>
+    </div>
+    <div class="err" id="suggest-err"></div>
+    <div style="font-size:11px;color:#34d399;min-height:14px" id="suggest-ok"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btn-suggest-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-suggest-send" style="width:auto;flex:1;padding:8px">Send 💡</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://DireKMac.github.io/marks-expander/popup.js"></script>
+</body>
+</html>
